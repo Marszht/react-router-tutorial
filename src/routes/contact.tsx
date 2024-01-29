@@ -114,7 +114,7 @@ interface IFavoriteProp {
 }
 function Favorite({ contact }: IFavoriteProp) {
   // yes, this is a `let` for later
-  let favorite = contact.favorite;
+  const favorite = contact.favorite;
   return (
     <Form method='post'>
       <button

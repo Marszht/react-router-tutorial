@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import {
   Outlet,
   NavLink,
@@ -8,47 +8,61 @@ import {
   redirect,
   ScrollRestoration,
   useNavigation,
+  useParams
 } from 'react-router-dom';
-import type { Location, useMatches } from 'react-router-dom';
+import type { Location, useMatches, LoaderFunctionArgs } from 'react-router-dom';
 
 import { getContacts, createContact } from '../contacts';
 
 import { IContact } from './contact';
 
 export async function action() {
-  console.log('root.action');
   const contact = await createContact();
   return redirect(`/contacts/${contact.id}/edit`);
 }
 
-export async function loader() {
-  const contacts = await getContacts();
-  return { contacts };
+export async function loader({ request }: LoaderFunctionArgs) {
+  const url = new URL(request.url);
+  const q = url.searchParams.get("search");
+  const contacts = await getContacts(q);
+  return { contacts, q };
 }
 type LoaderData = {
   contacts: IContact[];
 };
 export default function Root() {
-  const { contacts }: LoaderData = useLoaderData() as any;
+  const { contacts, q }: LoaderData = useLoaderData() as any;
   const navigation = useNavigation();
-  let getKey = useCallback(
+  const { contactId } = useParams();
+  const contactRole = contacts.find(item => item.id === contactId)?.first
+  const getKey = useCallback(
     (location: Location, matches: ReturnType<typeof useMatches>) => {
-      let match = matches.find(m => (m.handle as any)?.scrollMode);
+      const match = matches.find(m => (m.handle as any)?.scrollMode);
       if ((match?.handle as any)?.scrollMode === 'pathname') {
-        console.log(location.pathname);
+        console.log(location);
         return location.pathname;
       }
+      // if (~(contactRole?.indexOf("mars") ?? -1)) {
+      //   console.log("contactRole", contactRole)
+      //   return location.pathname;
+      // }
 
       return location.key;
     },
     []
   );
+  useEffect(() => {
+    const ele = document.getElementById("q") as HTMLInputElement | null;
+    if (ele) {
+      ele.value = q;
+    }
+  }, [q]);
   return (
     <>
       <div id='sidebar'>
         <h1>React Router Contacts</h1>
         <div>
-          <form
+          <Form
             id='search-form'
             role='search'>
             <input
@@ -57,6 +71,7 @@ export default function Root() {
               placeholder='Search'
               type='search'
               name='search'
+              defaultValue={q}
             />
             <div
               id='search-spinner'
@@ -66,7 +81,7 @@ export default function Root() {
             <div
               className='sr-only'
               aria-live='polite'></div>
-          </form>
+          </Form>
           <Form method='post'>
             <button type='submit'>New</button>
           </Form>
