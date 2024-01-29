@@ -1,10 +1,11 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Form, useLoaderData,  redirect, } from 'react-router-dom';
 
 import { updateContact } from "../contacts";
 
 
 export async function action({ request, params }: any) {
-  console.log("object", params);
+  console.log("object", params, request);
   const formData = await request.formData();
   const updates = Object.fromEntries(formData);
   await updateContact(params.contactId, updates);

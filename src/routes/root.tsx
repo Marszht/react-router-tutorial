@@ -1,4 +1,5 @@
-import { Outlet, Link, useLoaderData, Form } from 'react-router-dom';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { Outlet, Link, useLoaderData, Form, redirect, ScrollRestoration } from 'react-router-dom';
 
 import { getContacts, createContact } from '../contacts';
 
@@ -6,8 +7,9 @@ import { IContact } from './contact';
 
 
 export async function action() {
+  console.log("root.action")
   const contact = await createContact();
-  return { contact };
+  return redirect(`/contacts/${contact.id}/edit`);
 }
 
 export async function loader() {
@@ -79,6 +81,10 @@ export default function Root() {
       <div id='detail'>
         <Outlet />
       </div>
+      <ScrollRestoration getKey={(location) => {
+        // default behavior
+        return location.key;
+      }} />
     </>
   );
 }
