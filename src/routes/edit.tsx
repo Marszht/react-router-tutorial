@@ -1,11 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Form, useLoaderData,  redirect, } from 'react-router-dom';
+import { Form, useLoaderData, redirect, useNavigate } from 'react-router-dom';
 
-import { updateContact } from "../contacts";
-
+import { updateContact } from '../contacts';
 
 export async function action({ request, params }: any) {
-  console.log("object", params, request);
+  console.log('object', params, request);
   const formData = await request.formData();
   const updates = Object.fromEntries(formData);
   await updateContact(params.contactId, updates);
@@ -14,6 +13,7 @@ export async function action({ request, params }: any) {
 
 export default function EditContact() {
   const { contact }: any = useLoaderData();
+  const navigate = useNavigate();
 
   return (
     <Form
@@ -65,7 +65,13 @@ export default function EditContact() {
       </label>
       <p>
         <button type='submit'>Save</button>
-        <button type='button'>Cancel</button>
+        <button
+          type='button'
+          onClick={() => {
+            navigate(-1);
+          }}>
+          Cancel
+        </button>
       </p>
     </Form>
   );

@@ -13,6 +13,8 @@ import Contact, {
 import EditContact, {
   action as editAction,
 } from "./routes/edit";
+import { action as destroyAction } from "./routes/destroy";
+import Index from "./routes/index";
 
 import './index.css';
 
@@ -24,16 +26,23 @@ const router = createBrowserRouter([
     loader: rootLoader,
     action: rootAction,
     children: [
+      { index: true, element: <Index /> },
       {
         path: 'contacts/:contactId',
         element: <Contact />,
         loader: contactLoader,
+        handle: { scrollMode: 'pathname' },
       },
       {
         path: "contacts/:contactId/edit",
         element: <EditContact />,
         loader: contactLoader,
         action: editAction,
+      },
+      {
+        path: "contacts/:contactId/destroy",
+        action: destroyAction,
+        errorElement: <div>Oops! There was an error.</div>
       },
     ],
   },

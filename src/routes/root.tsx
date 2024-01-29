@@ -1,13 +1,22 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Outlet, Link, useLoaderData, Form, redirect, ScrollRestoration } from 'react-router-dom';
+import React, { useCallback } from 'react';
+import {
+  Outlet,
+  NavLink,
+  useLoaderData,
+  Form,
+  redirect,
+  ScrollRestoration,
+  useNavigation,
+} from 'react-router-dom';
+import type { Location, useMatches } from 'react-router-dom';
 
 import { getContacts, createContact } from '../contacts';
 
 import { IContact } from './contact';
 
-
 export async function action() {
-  console.log("root.action")
+  console.log('root.action');
   const contact = await createContact();
   return redirect(`/contacts/${contact.id}/edit`);
 }
@@ -21,7 +30,19 @@ type LoaderData = {
 };
 export default function Root() {
   const { contacts }: LoaderData = useLoaderData() as any;
+  const navigation = useNavigation();
+  let getKey = useCallback(
+    (location: Location, matches: ReturnType<typeof useMatches>) => {
+      let match = matches.find(m => (m.handle as any)?.scrollMode);
+      if ((match?.handle as any)?.scrollMode === 'pathname') {
+        console.log(location.pathname);
+        return location.pathname;
+      }
 
+      return location.key;
+    },
+    []
+  );
   return (
     <>
       <div id='sidebar'>
@@ -35,7 +56,7 @@ export default function Root() {
               aria-label='Search contacts'
               placeholder='Search'
               type='search'
-              name='q'
+              name='search'
             />
             <div
               id='search-spinner'
@@ -58,7 +79,11 @@ export default function Root() {
             <ul>
               {contacts.map(contact => (
                 <li key={contact.id}>
-                  <Link to={`contacts/${contact.id}`}>
+                  <NavLink
+                    to={`contacts/${contact.id}`}
+                    className={({ isActive, isPending }) =>
+                      isActive ? 'active' : isPending ? 'pending' : ''
+                    }>
                     {contact.first || contact.last ? (
                       <>
                         {contact.first} {contact.last}
@@ -67,7 +92,7 @@ export default function Root() {
                       <i>No Name</i>
                     )}{' '}
                     {contact.favorite && <span>★</span>}
-                  </Link>
+                  </NavLink>
                 </li>
               ))}
             </ul>
@@ -78,13 +103,12 @@ export default function Root() {
           )}
         </nav>
       </div>
-      <div id='detail'>
+      <div
+        id='detail'
+        className={navigation.state === 'loading' ? 'loading' : ''}>
         <Outlet />
       </div>
-      <ScrollRestoration getKey={(location) => {
-        // default behavior
-        return location.key;
-      }} />
+      <ScrollRestoration getKey={getKey} />
     </>
   );
 }

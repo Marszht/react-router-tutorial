@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Form, useLoaderData } from "react-router-dom";
-import type { Params } from "react-router"
-import { getContact } from "../contacts";
+import { Form, useLoaderData } from 'react-router-dom';
+import type { Params } from 'react-router';
+import { getContact } from '../contacts';
 
 export interface IContact {
   first?: string;
@@ -10,7 +10,7 @@ export interface IContact {
   twitter: string;
   notes: string;
   favorite: boolean;
-  id?: string
+  id?: string;
 }
 // 索引签名,接受任何属性
 type AnyPropsObject = {
@@ -19,12 +19,24 @@ type AnyPropsObject = {
 type LoaderData = {
   contacts: IContact[];
 };
-export async function loader({ params }: any) {
-  const contact = await getContact(params.contactId) || {};
-  return { contact };
+type ArrayLoaderData = Array<number>;
+type ReturnType = { contact: IContact; arr: ArrayLoaderData };
+
+async function getArrayLoader(): Promise<ArrayLoaderData> {
+  await new Promise(r => setTimeout(r, 1000));
+  return new Array(100).fill(null).map((_, i) => i)
 }
+
+export async function loader({ params }: any): Promise<ReturnType> {
+  const p1 = getContact(params.contactId) || {};
+  const p2 = getArrayLoader();
+  const contact = await p1;
+  const  arr  = await p2;
+  return { contact, arr };
+}
+// const arrList =
 export default function Contact() {
-  const { contact }: any = useLoaderData();
+  const { contact, arr } = useLoaderData() as ReturnType;
 
   return (
     <>
@@ -68,7 +80,9 @@ export default function Contact() {
               method='post'
               action='destroy'
               onSubmit={event => {
-                if (!confirm('Please confirm you want to delete this record.')) {
+                if (
+                  !confirm('Please confirm you want to delete this record.')
+                ) {
                   event.preventDefault();
                 }
               }}>
@@ -77,38 +91,22 @@ export default function Contact() {
           </div>
         </div>
       </div>
-      <div className="box" style={{ display: "flex", flexDirection: "column" }}>
-        <div className="ul li">1</div>
-        <div className="ul li">2</div>
-        <div className="ul li">3</div>
-        <div className="ul li">44</div>
-        <div className="ul li">4</div>
-        <div className="ul li">4</div>
-        <div className="ul li">5</div>
-        <div className="ul li">5</div>
-        <div className="ul li">5</div>
-        <div className="ul li">5</div>
-        <div className="ul li">5</div>
-        <div className="ul li">5</div>
-        <div className="ul li">5</div>
-        <div className="ul li">5</div>
-        <div className="ul li">5</div>
-        <div className="ul li">5</div>
-        <div className="ul li">5</div>
-        <div className="ul li">5</div>
-        <div className="ul li">5</div>
-        <div className="ul li">5</div>
-        <div className="ul li">55</div>
-        <div className="ul li">5</div>
-        <div className="ul li">5</div>
-        <div className="ul li">5</div>
-        <div className="ul li">5</div>
-        <div className="ul li">55</div>
-        <div className="ul li">5</div>
-        <div className="ul li">5</div>
-        <div className="ul li">5</div>
-        <div className="ul li">5  5 </div>
-      </div></>
+      <div
+        className='box'
+        style={{ display: 'flex', flexDirection: 'column' }}>
+        {arr.map(n => (
+          <p key={n}>
+            Item {n} on {location.pathname}
+          </p>
+        ))}
+        <h3 id='heading'>This is a linkable heading</h3>
+        {arr.map(n => (
+          <p key={n}>
+            Item {n + 100} on {location.pathname}
+          </p>
+        ))}
+      </div>
+    </>
   );
 }
 interface IFavoriteProp {
